@@ -5,13 +5,18 @@ use Utopia\System\System;
 /**
  * Platform configuration
  */
+$consoleHostnames = array_filter(array_map('trim', explode(',', System::getEnv('_APP_CONSOLE_HOSTNAMES', ''))));
+
 return [
     'apiHostname' => System::getEnv('_APP_DOMAIN', 'localhost'),
     'consoleHostname' => System::getEnv('_APP_CONSOLE_DOMAIN', System::getEnv('_APP_DOMAIN', 'localhost')),
-    'hostnames' => array_filter(array_unique([
-        System::getEnv('_APP_DOMAIN', 'localhost'),
-        System::getEnv('_APP_CONSOLE_DOMAIN', 'localhost'),
-    ])),
+    'hostnames' => array_filter(array_unique(array_merge(
+        [
+            System::getEnv('_APP_DOMAIN', 'localhost'),
+            System::getEnv('_APP_CONSOLE_DOMAIN', 'localhost'),
+        ],
+        $consoleHostnames
+    ))),
     'platformName' => APP_EMAIL_PLATFORM_NAME,
     'logoUrl' => APP_EMAIL_LOGO_URL,
     'accentColor' => APP_EMAIL_ACCENT_COLOR,

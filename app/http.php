@@ -2,6 +2,7 @@
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
+use Appwrite\Network\Cors;
 use Appwrite\Utopia\Request;
 use Appwrite\Utopia\Response;
 use Swoole\Constant;
@@ -444,6 +445,38 @@ $http->on(Constant::EVENT_REQUEST, function (SwooleRequest $swooleRequest, Swool
             ->addHeader('Expires', \date('D, d M Y H:i:s', \time() + $time) . ' GMT') // 45 days cache
             ->send(Files::getFileContents($request->getURI()));
 
+        return;
+    }
+
+    // Handle CORS preflight (OPTIONS) so browser gets 204 + CORS headers instead of 405
+    if ($request->getMethod() === 'OPTIONS') {
+        $platform = Config::getParam('platform', []);
+        $allowedHostnames = $platform['hostnames'] ?? [];
+        $originHostname = \parse_url($request->getOrigin(), PHP_URL_HOST);
+        if (!empty($originHostname)) {
+            $allowedHostnames = \array_unique(\array_merge($allowedHostnames, [$originHostname]));
+        }
+        $cors = new Cors(
+            $allowedHostnames,
+            allowedMethods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
+            allowedHeaders: [
+                'Accept', 'Origin', 'Cookie', 'Set-Cookie', 'Content-Type', 'Content-Range',
+                'X-Appwrite-Project', 'X-Appwrite-Key', 'X-Appwrite-Dev-Key', 'X-Appwrite-Locale',
+                'X-Appwrite-Mode', 'X-Appwrite-JWT', 'X-Appwrite-Response-Format', 'X-Appwrite-Timeout',
+                'X-Appwrite-ID', 'X-Appwrite-Timestamp', 'X-Appwrite-Session',
+                'X-SDK-Version', 'X-SDK-Name', 'X-SDK-Language', 'X-SDK-Platform', 'X-SDK-GraphQL', 'X-SDK-Profile',
+                'Range', 'Cache-Control', 'Expires', 'Pragma',
+                'X-Fallback-Cookies', 'X-Requested-With', 'X-Forwarded-For', 'X-Forwarded-User-Agent',
+            ],
+            allowCredentials: true,
+            exposedHeaders: ['X-Appwrite-Session', 'X-Fallback-Cookies'],
+        );
+        foreach ($cors->headers($request->getOrigin()) as $name => $value) {
+            $swooleResponse->header($name, $value);
+        }
+        $swooleResponse->header('Server', 'Appwrite');
+        $swooleResponse->status(204);
+        $swooleResponse->end();
         return;
     }
 
