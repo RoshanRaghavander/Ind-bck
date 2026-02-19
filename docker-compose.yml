@@ -25,6 +25,9 @@ services:
       - --providers.docker.constraints=Label(`traefik.constraint-label-stack`,`indobase`)
       - --entrypoints.indobase_web.address=:80
       - --entrypoints.indobase_websecure.address=:443
+      # Backwards-compatible entrypoints for external configs expecting `appwrite_*`
+      - --entrypoints.appwrite_web.address=:80
+      - --entrypoints.appwrite_websecure.address=:443
       - --accesslog=true
     ports:
       - 80:80
@@ -79,6 +82,15 @@ services:
       - traefik.http.routers.indobase_api_https.rule=PathPrefix(`/`)
       - traefik.http.routers.indobase_api_https.service=indobase_api
       - traefik.http.routers.indobase_api_https.tls=true
+      # Backwards-compatible labels for systems still referencing `appwrite_*`
+      - "traefik.http.services.appwrite_api.loadbalancer.server.port=80"
+      - traefik.http.routers.appwrite_api_http.entrypoints=appwrite_web
+      - traefik.http.routers.appwrite_api_http.rule=PathPrefix(`/`)
+      - traefik.http.routers.appwrite_api_http.service=appwrite_api
+      - traefik.http.routers.appwrite_api_https.entrypoints=appwrite_websecure
+      - traefik.http.routers.appwrite_api_https.rule=PathPrefix(`/`)
+      - traefik.http.routers.appwrite_api_https.service=appwrite_api
+      - traefik.http.routers.appwrite_api_https.tls=true
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock # Only needed for tests
       - ./docker-compose.yml:/usr/src/code/docker-compose.yml # Only needed for tests
@@ -238,6 +250,23 @@ services:
       - "traefik.enable=true"
       - "traefik.constraint-label-stack=indobase"
       - "traefik.docker.network=indobase"
+      - "traefik.http.services.indobase_console.loadbalancer.server.port=80"
+      - traefik.http.routers.indobase_console_http.entrypoints=indobase_web
+      - traefik.http.routers.indobase_console_http.rule=PathPrefix(`/console`)
+      - traefik.http.routers.indobase_console_http.service=indobase_console
+      - traefik.http.routers.indobase_console_https.entrypoints=indobase_websecure
+      - traefik.http.routers.indobase_console_https.rule=PathPrefix(`/console`)
+      - traefik.http.routers.indobase_console_https.service=indobase_console
+      - traefik.http.routers.indobase_console_https.tls=true
+      # Backwards-compatible console labels
+      - "traefik.http.services.appwrite_console.loadbalancer.server.port=80"
+      - traefik.http.routers.appwrite_console_http.entrypoints=appwrite_web
+      - traefik.http.routers.appwrite_console_http.rule=PathPrefix(`/console`)
+      - traefik.http.routers.appwrite_console_http.service=appwrite_console
+      - traefik.http.routers.appwrite_console_https.entrypoints=appwrite_websecure
+      - traefik.http.routers.appwrite_console_https.rule=PathPrefix(`/console`)
+      - traefik.http.routers.appwrite_console_https.service=appwrite_console
+      - traefik.http.routers.appwrite_console_https.tls=true
       - "traefik.http.services.indobase_console.loadbalancer.server.port=80"
       #ws
       - traefik.http.routers.indobase_console_http.entrypoints=indobase_web
