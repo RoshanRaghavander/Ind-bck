@@ -14,7 +14,7 @@ services:
   traefik:
     image: traefik:2.11
     <<: *x-logging
-    container_name: appwrite-traefik
+    container_name: indobase-traefik
     command:
       - --log.level=DEBUG
       - --api.insecure=true
@@ -22,9 +22,9 @@ services:
       - --providers.file.watch=true
       - --providers.docker=true
       - --providers.docker.exposedByDefault=false
-      - --providers.docker.constraints=Label(`traefik.constraint-label-stack`,`appwrite`)
-      - --entrypoints.appwrite_web.address=:80
-      - --entrypoints.appwrite_websecure.address=:443
+      - --providers.docker.constraints=Label(`traefik.constraint-label-stack`,`indobase`)
+      - --entrypoints.indobase_web.address=:80
+      - --entrypoints.indobase_websecure.address=:443
       - --accesslog=true
     ports:
       - 80:80
@@ -33,25 +33,25 @@ services:
       - 9500:8080
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-      - appwrite-config:/storage/config:ro
-      - appwrite-certificates:/storage/certificates:ro
+      - indobase-config:/storage/config:ro
+      - indobase-certificates:/storage/certificates:ro
     depends_on:
-      - appwrite
+      - indobase
     networks:
-      appwrite:
+      indobase:
         aliases:
-          - appwrite.test
+          - indobase.test
       gateway:
         aliases:
-          - appwrite.test
+          - indobase.test
       runtimes:
         aliases:
-          - appwrite.test
+          - indobase.test
 
-  appwrite:
-    container_name: appwrite
+  indobase:
+    container_name: indobase
     <<: *x-logging
-    image: appwrite-dev
+    image: indobase-dev
     build:
       context: .
       target: development
@@ -62,35 +62,35 @@ services:
     ports:
       - 9501:80
     networks:
-      - appwrite
+      - indobase
     dns:
       - 172.16.238.100
     labels:
       - "traefik.enable=true"
-      - "traefik.constraint-label-stack=appwrite"
-      - "traefik.docker.network=appwrite"
-      - "traefik.http.services.appwrite_api.loadbalancer.server.port=80"
+      - "traefik.constraint-label-stack=indobase"
+      - "traefik.docker.network=indobase"
+      - "traefik.http.services.indobase_api.loadbalancer.server.port=80"
       #http
-      - traefik.http.routers.appwrite_api_http.entrypoints=appwrite_web
-      - traefik.http.routers.appwrite_api_http.rule=PathPrefix(`/`)
-      - traefik.http.routers.appwrite_api_http.service=appwrite_api
+      - traefik.http.routers.indobase_api_http.entrypoints=indobase_web
+      - traefik.http.routers.indobase_api_http.rule=PathPrefix(`/`)
+      - traefik.http.routers.indobase_api_http.service=indobase_api
       # https
-      - traefik.http.routers.appwrite_api_https.entrypoints=appwrite_websecure
-      - traefik.http.routers.appwrite_api_https.rule=PathPrefix(`/`)
-      - traefik.http.routers.appwrite_api_https.service=appwrite_api
-      - traefik.http.routers.appwrite_api_https.tls=true
+      - traefik.http.routers.indobase_api_https.entrypoints=indobase_websecure
+      - traefik.http.routers.indobase_api_https.rule=PathPrefix(`/`)
+      - traefik.http.routers.indobase_api_https.service=indobase_api
+      - traefik.http.routers.indobase_api_https.tls=true
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock # Only needed for tests
       - ./docker-compose.yml:/usr/src/code/docker-compose.yml # Only needed for tests
       - ./.env:/usr/src/code/.env # Only needed for tests
-      - appwrite-uploads:/storage/uploads:rw
-      - appwrite-imports:/storage/imports:rw
-      - appwrite-cache:/storage/cache:rw
-      - appwrite-config:/storage/config:rw
-      - appwrite-certificates:/storage/certificates:rw
-      - appwrite-functions:/storage/functions:rw
-      - appwrite-sites:/storage/sites:rw
-      - appwrite-builds:/storage/builds:rw
+      - indobase-uploads:/storage/uploads:rw
+      - indobase-imports:/storage/imports:rw
+      - indobase-cache:/storage/cache:rw
+      - indobase-config:/storage/config:rw
+      - indobase-certificates:/storage/certificates:rw
+      - indobase-functions:/storage/functions:rw
+      - indobase-sites:/storage/sites:rw
+      - indobase-builds:/storage/builds:rw
       - ./phpunit.xml:/usr/src/code/phpunit.xml
       - ./tests:/usr/src/code/tests
       - ./app:/usr/src/code/app
@@ -227,52 +227,52 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
 
-  appwrite-console:
+  indobase-console:
     <<: *x-logging
-    container_name: appwrite-console
+    container_name: indobase-console
     image: appwrite/console:7.4.11
     restart: unless-stopped
     networks:
-      - appwrite
+      - indobase
     labels:
       - "traefik.enable=true"
-      - "traefik.constraint-label-stack=appwrite"
-      - "traefik.docker.network=appwrite"
-      - "traefik.http.services.appwrite_console.loadbalancer.server.port=80"
+      - "traefik.constraint-label-stack=indobase"
+      - "traefik.docker.network=indobase"
+      - "traefik.http.services.indobase_console.loadbalancer.server.port=80"
       #ws
-      - traefik.http.routers.appwrite_console_http.entrypoints=appwrite_web
-      - traefik.http.routers.appwrite_console_http.rule=PathPrefix(`/console`)
-      - traefik.http.routers.appwrite_console_http.service=appwrite_console
+      - traefik.http.routers.indobase_console_http.entrypoints=indobase_web
+      - traefik.http.routers.indobase_console_http.rule=PathPrefix(`/console`)
+      - traefik.http.routers.indobase_console_http.service=indobase_console
       # wss
-      - traefik.http.routers.appwrite_console_https.entrypoints=appwrite_websecure
-      - traefik.http.routers.appwrite_console_https.rule=PathPrefix(`/console`)
-      - traefik.http.routers.appwrite_console_https.service=appwrite_console
-      - traefik.http.routers.appwrite_console_https.tls=true
+      - traefik.http.routers.indobase_console_https.entrypoints=indobase_websecure
+      - traefik.http.routers.indobase_console_https.rule=PathPrefix(`/console`)
+      - traefik.http.routers.indobase_console_https.service=indobase_console
+      - traefik.http.routers.indobase_console_https.tls=true
 
-  appwrite-realtime:
+  indobase-realtime:
     entrypoint: realtime
     <<: *x-logging
-    container_name: appwrite-realtime
-    image: appwrite-dev
+    container_name: indobase-realtime
+    image: indobase-dev
     restart: unless-stopped
     ports:
       - 9505:80
     labels:
       - "traefik.enable=true"
-      - "traefik.constraint-label-stack=appwrite"
-      - "traefik.docker.network=appwrite"
-      - "traefik.http.services.appwrite_realtime.loadbalancer.server.port=80"
+      - "traefik.constraint-label-stack=indobase"
+      - "traefik.docker.network=indobase"
+      - "traefik.http.services.indobase_realtime.loadbalancer.server.port=80"
       #ws
-      - traefik.http.routers.appwrite_realtime_ws.entrypoints=appwrite_web
-      - traefik.http.routers.appwrite_realtime_ws.rule=PathPrefix(`/v1/realtime`)
-      - traefik.http.routers.appwrite_realtime_ws.service=appwrite_realtime
+      - traefik.http.routers.indobase_realtime_ws.entrypoints=indobase_web
+      - traefik.http.routers.indobase_realtime_ws.rule=PathPrefix(`/v1/realtime`)
+      - traefik.http.routers.indobase_realtime_ws.service=indobase_realtime
       # wss
-      - traefik.http.routers.appwrite_realtime_wss.entrypoints=appwrite_websecure
-      - traefik.http.routers.appwrite_realtime_wss.rule=PathPrefix(`/v1/realtime`)
-      - traefik.http.routers.appwrite_realtime_wss.service=appwrite_realtime
-      - traefik.http.routers.appwrite_realtime_wss.tls=true
+      - traefik.http.routers.indobase_realtime_wss.entrypoints=indobase_websecure
+      - traefik.http.routers.indobase_realtime_wss.rule=PathPrefix(`/v1/realtime`)
+      - traefik.http.routers.indobase_realtime_wss.service=indobase_realtime
+      - traefik.http.routers.indobase_realtime_wss.tls=true
     networks:
-      - appwrite
+      - indobase
     volumes:
       - ./app:/usr/src/code/app
       - ./src:/usr/src/code/src
@@ -299,13 +299,13 @@ services:
       - _APP_LOGGING_CONFIG_REALTIME
       - _APP_DATABASE_SHARED_TABLES
 
-  appwrite-worker-audits:
+  indobase-worker-audits:
     entrypoint: worker-audits
     <<: *x-logging
-    container_name: appwrite-worker-audits
-    image: appwrite-dev
+    container_name: indobase-worker-audits
+    image: indobase-dev
     networks:
-      - appwrite
+      - indobase
     volumes:
       - ./app:/usr/src/code/app
       - ./src:/usr/src/code/src
@@ -328,13 +328,13 @@ services:
       - _APP_LOGGING_CONFIG
       - _APP_DATABASE_SHARED_TABLES
 
-  appwrite-worker-webhooks:
+  indobase-worker-webhooks:
     entrypoint: worker-webhooks
     <<: *x-logging
-    container_name: appwrite-worker-webhooks
-    image: appwrite-dev
+    container_name: indobase-worker-webhooks
+    image: indobase-dev
     networks:
-      - appwrite
+      - indobase
     volumes:
       - ./app:/usr/src/code/app
       - ./src:/usr/src/code/src
@@ -361,23 +361,23 @@ services:
       - _APP_WEBHOOK_MAX_FAILED_ATTEMPTS
       - _APP_DATABASE_SHARED_TABLES
 
-  appwrite-worker-deletes:
+  indobase-worker-deletes:
     entrypoint: worker-deletes
     <<: *x-logging
-    container_name: appwrite-worker-deletes
-    image: appwrite-dev
+    container_name: indobase-worker-deletes
+    image: indobase-dev
     networks:
-      - appwrite
+      - indobase
     depends_on:
       - redis
       - mariadb
     volumes:
-      - appwrite-uploads:/storage/uploads:rw
-      - appwrite-cache:/storage/cache:rw
-      - appwrite-functions:/storage/functions:rw
-      - appwrite-sites:/storage/sites:rw
-      - appwrite-builds:/storage/builds:rw
-      - appwrite-certificates:/storage/certificates:rw
+      - indobase-uploads:/storage/uploads:rw
+      - indobase-cache:/storage/cache:rw
+      - indobase-functions:/storage/functions:rw
+      - indobase-sites:/storage/sites:rw
+      - indobase-builds:/storage/builds:rw
+      - indobase-certificates:/storage/certificates:rw
       - ./app:/usr/src/code/app
       - ./src:/usr/src/code/src
     environment:
@@ -424,13 +424,13 @@ services:
       - _APP_MAINTENANCE_RETENTION_AUDIT
       - _APP_MAINTENANCE_RETENTION_AUDIT_CONSOLE
 
-  appwrite-worker-databases:
+  indobase-worker-databases:
     entrypoint: worker-databases
     <<: *x-logging
-    container_name: appwrite-worker-databases
-    image: appwrite-dev
+    container_name: indobase-worker-databases
+    image: indobase-dev
     networks:
-      - appwrite
+      - indobase
     volumes:
       - ./app:/usr/src/code/app
       - ./src:/usr/src/code/src
@@ -455,18 +455,18 @@ services:
       - _APP_QUEUE_NAME
       - _APP_DATABASE_SHARED_TABLES
 
-  appwrite-worker-builds:
+  indobase-worker-builds:
     entrypoint: worker-builds
     <<: *x-logging
-    container_name: appwrite-worker-builds
-    image: appwrite-dev
+    container_name: indobase-worker-builds
+    image: indobase-dev
     networks:
-      - appwrite
+      - indobase
     volumes:
-      - appwrite-functions:/storage/functions:rw
-      - appwrite-sites:/storage/sites:rw
-      - appwrite-builds:/storage/builds:rw
-      - appwrite-uploads:/storage/uploads:rw
+      - indobase-functions:/storage/functions:rw
+      - indobase-sites:/storage/sites:rw
+      - indobase-builds:/storage/builds:rw
+      - indobase-uploads:/storage/uploads:rw
       - ./app:/usr/src/code/app
       - ./src:/usr/src/code/src
     depends_on:
@@ -529,19 +529,19 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
 
-  appwrite-worker-certificates:
+  indobase-worker-certificates:
     entrypoint: worker-certificates
     <<: *x-logging
-    container_name: appwrite-worker-certificates
-    image: appwrite-dev
+    container_name: indobase-worker-certificates
+    image: indobase-dev
     networks:
-      - appwrite
+      - indobase
     depends_on:
       - redis
       - mariadb
     volumes:
-      - appwrite-config:/storage/config:rw
-      - appwrite-certificates:/storage/certificates:rw
+      - indobase-config:/storage/config:rw
+      - indobase-certificates:/storage/certificates:rw
       - ./app:/usr/src/code/app
       - ./src:/usr/src/code/src
     environment:
@@ -568,13 +568,13 @@ services:
       - _APP_LOGGING_CONFIG
       - _APP_DATABASE_SHARED_TABLES
 
-  appwrite-worker-functions:
+  indobase-worker-functions:
     entrypoint: worker-functions
     <<: *x-logging
-    container_name: appwrite-worker-functions
-    image: appwrite-dev
+    container_name: indobase-worker-functions
+    image: indobase-dev
     networks:
-      - appwrite
+      - indobase
     volumes:
       - ./app:/usr/src/code/app
       - ./src:/usr/src/code/src
@@ -611,13 +611,13 @@ services:
       - _APP_LOGGING_PROVIDER
       - _APP_DATABASE_SHARED_TABLES
 
-  appwrite-worker-mails:
+  indobase-worker-mails:
     entrypoint: worker-mails
     <<: *x-logging
-    container_name: appwrite-worker-mails
-    image: appwrite-dev
+    container_name: indobase-worker-mails
+    image: indobase-dev
     networks:
-      - appwrite
+      - indobase
     volumes:
       - ./app:/usr/src/code/app
       - ./src:/usr/src/code/src
@@ -645,16 +645,16 @@ services:
       - _APP_OPTIONS_FORCE_HTTPS
       - _APP_DATABASE_SHARED_TABLES
 
-  appwrite-worker-messaging:
+  indobase-worker-messaging:
     entrypoint: worker-messaging
     <<: *x-logging
-    container_name: appwrite-worker-messaging
+    container_name: indobase-worker-messaging
     restart: unless-stopped
-    image: appwrite-dev
+    image: indobase-dev
     networks:
-      - appwrite
+      - indobase
     volumes:
-      - appwrite-uploads:/storage/uploads:rw
+      - indobase-uploads:/storage/uploads:rw
       - ./app:/usr/src/code/app
       - ./src:/usr/src/code/src
     depends_on:
@@ -700,17 +700,17 @@ services:
       - _APP_STORAGE_WASABI_BUCKET
       - _APP_DATABASE_SHARED_TABLES
 
-  appwrite-worker-migrations:
+  indobase-worker-migrations:
     entrypoint: worker-migrations
     <<: *x-logging
-    container_name: appwrite-worker-migrations
+    container_name: indobase-worker-migrations
     restart: unless-stopped
-    image: appwrite-dev
+    image: indobase-dev
     networks:
-      - appwrite
+      - indobase
     volumes:
-      - appwrite-imports:/storage/imports:rw
-      - appwrite-uploads:/storage/uploads:rw
+      - indobase-imports:/storage/imports:rw
+      - indobase-uploads:/storage/uploads:rw
       - ./app:/usr/src/code/app
       - ./src:/usr/src/code/src
       - ./tests:/usr/src/code/tests
@@ -742,13 +742,13 @@ services:
       - _APP_DATABASE_SHARED_TABLES
       - _APP_OPTIONS_FORCE_HTTPS
 
-  appwrite-task-maintenance:
+  indobase-task-maintenance:
     entrypoint: maintenance
     <<: *x-logging
-    container_name: appwrite-task-maintenance
-    image: appwrite-dev
+    container_name: indobase-task-maintenance
+    image: indobase-dev
     networks:
-      - appwrite
+      - indobase
     volumes:
       - ./app:/usr/src/code/app
       - ./src:/usr/src/code/src
@@ -785,13 +785,13 @@ services:
       - _APP_MAINTENANCE_START_TIME
       - _APP_DATABASE_SHARED_TABLES
 
-  appwrite-task-stats-resources:
-    container_name: appwrite-task-stats-resources
+  indobase-task-stats-resources:
+    container_name: indobase-task-stats-resources
     entrypoint: stats-resources
     <<: *x-logging
-    image: appwrite-dev
+    image: indobase-dev
     networks:
-      - appwrite
+      - indobase
     volumes:
       - ./app:/usr/src/code/app
       - ./src:/usr/src/code/src
@@ -816,13 +816,13 @@ services:
       - _APP_DATABASE_SHARED_TABLES
       - _APP_STATS_RESOURCES_INTERVAL
 
-  appwrite-worker-stats-resources:
+  indobase-worker-stats-resources:
     entrypoint: worker-stats-resources
     <<: *x-logging
-    container_name: appwrite-worker-stats-resources
-    image: appwrite-dev
+    container_name: indobase-worker-stats-resources
+    image: indobase-dev
     networks:
-      - appwrite
+      - indobase
     volumes:
       - ./app:/usr/src/code/app
       - ./src:/usr/src/code/src
@@ -847,13 +847,13 @@ services:
       - _APP_USAGE_AGGREGATION_INTERVAL
       - _APP_DATABASE_SHARED_TABLES
 
-  appwrite-worker-stats-usage:
+  indobase-worker-stats-usage:
     entrypoint: worker-stats-usage
     <<: *x-logging
-    container_name: appwrite-worker-stats-usage
-    image: appwrite-dev
+    container_name: indobase-worker-stats-usage
+    image: indobase-dev
     networks:
-      - appwrite
+      - indobase
     volumes:
       - ./app:/usr/src/code/app
       - ./src:/usr/src/code/src
@@ -878,13 +878,13 @@ services:
       - _APP_USAGE_AGGREGATION_INTERVAL
       - _APP_DATABASE_SHARED_TABLES
 
-  appwrite-task-scheduler-functions:
+  indobase-task-scheduler-functions:
     entrypoint: schedule-functions
     <<: *x-logging
-    container_name: appwrite-task-scheduler-functions
-    image: appwrite-dev
+    container_name: indobase-task-scheduler-functions
+    image: indobase-dev
     networks:
-      - appwrite
+      - indobase
     volumes:
       - ./app:/usr/src/code/app
       - ./src:/usr/src/code/src
@@ -906,13 +906,13 @@ services:
       - _APP_DB_PASS
       - _APP_DATABASE_SHARED_TABLES
 
-  appwrite-task-scheduler-executions:
+  indobase-task-scheduler-executions:
     entrypoint: schedule-executions
     <<: *x-logging
-    container_name: appwrite-task-scheduler-executions
-    image: appwrite-dev
+    container_name: indobase-task-scheduler-executions
+    image: indobase-dev
     networks:
-      - appwrite
+      - indobase
     volumes:
       - ./app:/usr/src/code/app
       - ./src:/usr/src/code/src
@@ -933,13 +933,13 @@ services:
       - _APP_DB_USER
       - _APP_DB_PASS
 
-  appwrite-task-scheduler-messages:
+  indobase-task-scheduler-messages:
     entrypoint: schedule-messages
     <<: *x-logging
-    container_name: appwrite-task-scheduler-messages
-    image: appwrite-dev
+    container_name: indobase-task-scheduler-messages
+    image: indobase-dev
     networks:
-      - appwrite
+      - indobase
     volumes:
       - ./app:/usr/src/code/app
       - ./src:/usr/src/code/src
@@ -961,19 +961,19 @@ services:
       - _APP_DB_PASS
       - _APP_DATABASE_SHARED_TABLES
 
-  appwrite-assistant:
-    container_name: appwrite-assistant
+  indobase-assistant:
+    container_name: indobase-assistant
     image: appwrite/assistant:0.8.4
     networks:
-      - appwrite
+      - indobase
     environment:
       - _APP_ASSISTANT_OPENAI_API_KEY
 
-  appwrite-browser:
-    container_name: appwrite-browser
+  indobase-browser:
+    container_name: indobase-browser
     image: appwrite/browser:0.3.2
     networks:
-      - appwrite
+      - indobase
 
   openruntimes-executor:
     container_name: openruntimes-executor
@@ -983,13 +983,13 @@ services:
     image: openruntimes/executor:0.11.4
     restart: unless-stopped
     networks:
-      - appwrite
+      - indobase
       - runtimes
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-      - appwrite-builds:/storage/builds:rw
-      - appwrite-functions:/storage/functions:rw
-      - appwrite-sites:/storage/sites:rw
+      - indobase-builds:/storage/builds:rw
+      - indobase-functions:/storage/functions:rw
+      - indobase-sites:/storage/sites:rw
       # Host mount nessessary to share files between executor and runtimes.
       # It's not possible to share mount file between 2 containers without host mount (copying is too slow)
       - /tmp:/tmp:rw
@@ -1035,7 +1035,7 @@ services:
     stop_signal: SIGINT
     image: openruntimes/proxy:0.5.5
     networks:
-      - appwrite
+      - indobase
       - runtimes
     environment:
       - OPR_PROXY_WORKER_PER_CORE=$_APP_WORKER_PER_CORE
@@ -1051,12 +1051,12 @@ services:
 
   mariadb:
     image: mariadb:10.11 # fix issues when upgrading using: mysql_upgrade -u root -p
-    container_name: appwrite-mariadb
+    container_name: indobase-mariadb
     <<: *x-logging
     networks:
-      - appwrite
+      - indobase
     volumes:
-      - appwrite-mariadb:/var/lib/mysql:rw
+      - indobase-mariadb:/var/lib/mysql:rw
     ports:
       - "3306:3306"
     environment:
@@ -1070,7 +1070,7 @@ services:
   redis:
     image: redis:7.2.4-alpine
     <<: *x-logging
-    container_name: appwrite-redis
+    container_name: indobase-redis
     command: >
       redis-server
       --maxmemory            512mb
@@ -1079,21 +1079,21 @@ services:
     ports:
       - "6379:6379"
     networks:
-      - appwrite
+      - indobase
     volumes:
-      - appwrite-redis:/data:rw
+      - indobase-redis:/data:rw
 
   coredns: # DNS server for testing purposes (Proxy APIs)
     image: coredns/coredns:1.12.4
-    container_name: appwrite-coredns
+    container_name: indobase-coredns
     restart: unless-stopped
     <<: *x-logging
     command: ["-conf", "/mnt/resources/Corefile"]
-    # If you need to debug CoreDNS, do it from "appwrite container", or port forward:
+    # If you need to debug CoreDNS, do it from "indobase container", or port forward:
     # ports:
     #  - "53:53"
     networks:
-      appwrite:
+      indobase:
         ipv4_address: 172.16.238.100
     volumes:
       - ./tests/resources/coredns:/mnt/resources:ro
@@ -1112,82 +1112,82 @@ services:
 
   maildev: # used mainly for dev tests
     image: appwrite/mailcatcher:1.1.1
-    container_name: appwrite-mailcatcher
+    container_name: indobase-mailcatcher
     <<: *x-logging
     ports:
       - "9503:1080"
     networks:
-      - appwrite
+      - indobase
       - gateway
     labels:
       - "traefik.enable=true"
-      - "traefik.constraint-label-stack=appwrite"
+      - "traefik.constraint-label-stack=indobase"
       - "traefik.docker.network=gateway"
-      - "traefik.http.services.appwrite_maildev.loadbalancer.server.port=1080"
-      - "traefik.http.routers.appwrite_maildev_http.entrypoints=appwrite_web"
-      - "traefik.http.routers.appwrite_maildev_http.rule=Host(`mail.localhost`)"
-      - "traefik.http.routers.appwrite_maildev_http.service=appwrite_maildev"
-      - "traefik.http.routers.appwrite_maildev_https.entrypoints=appwrite_websecure"
-      - "traefik.http.routers.appwrite_maildev_https.rule=Host(`mail.localhost`)"
-      - "traefik.http.routers.appwrite_maildev_https.service=appwrite_maildev"
-      - "traefik.http.routers.appwrite_maildev_https.tls=true"
+      - "traefik.http.services.indobase_maildev.loadbalancer.server.port=1080"
+      - "traefik.http.routers.indobase_maildev_http.entrypoints=indobase_web"
+      - "traefik.http.routers.indobase_maildev_http.rule=Host(`mail.localhost`)"
+      - "traefik.http.routers.indobase_maildev_http.service=indobase_maildev"
+      - "traefik.http.routers.indobase_maildev_https.entrypoints=indobase_websecure"
+      - "traefik.http.routers.indobase_maildev_https.rule=Host(`mail.localhost`)"
+      - "traefik.http.routers.indobase_maildev_https.service=indobase_maildev"
+      - "traefik.http.routers.indobase_maildev_https.tls=true"
 
   request-catcher-webhook: # used mainly for dev tests (mock HTTP webhook)
     image: appwrite/requestcatcher:1.0.0
-    container_name: appwrite-requestcatcher-webhook
+    container_name: indobase-requestcatcher-webhook
     <<: *x-logging
     ports:
       - "9504:5000"
     networks:
-      - appwrite
+      - indobase
 
   request-catcher-sms: # used mainly for dev tests (mock SMS auth secret)
     image: appwrite/requestcatcher:1.0.0
-    container_name: appwrite-requestcatcher-sms
+    container_name: indobase-requestcatcher-sms
     <<: *x-logging
     ports:
       - "9507:5000"
     networks:
-      - appwrite
+      - indobase
 
   adminer:
     image: adminer
-    container_name: appwrite-adminer
+    container_name: indobase-adminer
     <<: *x-logging
     restart: always
     ports:
       - 9506:8080
     networks:
-      - appwrite
+      - indobase
       - gateway
     environment:
       - ADMINER_DESIGN=pepa-linha
       - ADMINER_DEFAULT_SERVER=mariadb
       - ADMINER_DEFAULT_USERNAME=root
       - ADMINER_DEFAULT_PASSWORD=rootsecretpassword
-      - ADMINER_DEFAULT_DB=appwrite
+      - ADMINER_DEFAULT_DB=indobase
     configs:
       - source: adminer-index.php
         target: /var/www/html/index.php
         mode: 0755
     labels:
       - "traefik.enable=true"
-      - "traefik.constraint-label-stack=appwrite"
+      - "traefik.constraint-label-stack=indobase"
       - "traefik.docker.network=gateway"
-      - "traefik.http.services.appwrite_adminer.loadbalancer.server.port=8080"
-      - "traefik.http.routers.appwrite_adminer_http.entrypoints=appwrite_web"
-      - "traefik.http.routers.appwrite_adminer_http.rule=Host(`mysql.localhost`)"
-      - "traefik.http.routers.appwrite_adminer_http.service=appwrite_adminer"
-      - "traefik.http.routers.appwrite_adminer_https.entrypoints=appwrite_websecure"
-      - "traefik.http.routers.appwrite_adminer_https.rule=Host(`mysql.localhost`)"
-      - "traefik.http.routers.appwrite_adminer_https.service=appwrite_adminer"
-      - "traefik.http.routers.appwrite_adminer_https.tls=true"
+      - "traefik.http.services.indobase_adminer.loadbalancer.server.port=8080"
+      - "traefik.http.routers.indobase_adminer_http.entrypoints=indobase_web"
+      - "traefik.http.routers.indobase_adminer_http.rule=Host(`mysql.localhost`)"
+      - "traefik.http.routers.indobase_adminer_http.service=indobase_adminer"
+      - "traefik.http.routers.indobase_adminer_https.entrypoints=indobase_websecure"
+      - "traefik.http.routers.indobase_adminer_https.rule=Host(`mysql.localhost`)"
+      - "traefik.http.routers.indobase_adminer_https.service=indobase_adminer"
+      - "traefik.http.routers.indobase_adminer_https.tls=true"
 
   redis-insight:
     image: redis/redisinsight:latest
     restart: unless-stopped
     networks:
-      - appwrite
+      - indobase
       - gateway
     environment:
       - RI_PRE_SETUP_DATABASES_PATH=/mnt/connections.json
@@ -1197,25 +1197,25 @@ services:
         mode: 0755
     labels:
       - "traefik.enable=true"
-      - "traefik.constraint-label-stack=appwrite"
+      - "traefik.constraint-label-stack=indobase"
       - "traefik.docker.network=gateway"
-      - "traefik.http.services.appwrite_redisinsight.loadbalancer.server.port=5540"
-      - "traefik.http.routers.appwrite_redisinsight_http.entrypoints=appwrite_web"
-      - "traefik.http.routers.appwrite_redisinsight_http.rule=Host(`redis.localhost`)"
-      - "traefik.http.routers.appwrite_redisinsight_http.service=appwrite_redisinsight"
-      - "traefik.http.routers.appwrite_redisinsight_https.entrypoints=appwrite_websecure"
-      - "traefik.http.routers.appwrite_redisinsight_https.rule=Host(`redis.localhost`)"
-      - "traefik.http.routers.appwrite_redisinsight_https.service=appwrite_redisinsight"
-      - "traefik.http.routers.appwrite_redisinsight_https.tls=true"
+      - "traefik.http.services.indobase_redisinsight.loadbalancer.server.port=5540"
+      - "traefik.http.routers.indobase_redisinsight_http.entrypoints=indobase_web"
+      - "traefik.http.routers.indobase_redisinsight_http.rule=Host(`redis.localhost`)"
+      - "traefik.http.routers.indobase_redisinsight_http.service=indobase_redisinsight"
+      - "traefik.http.routers.indobase_redisinsight_https.entrypoints=indobase_websecure"
+      - "traefik.http.routers.indobase_redisinsight_https.rule=Host(`redis.localhost`)"
+      - "traefik.http.routers.indobase_redisinsight_https.service=indobase_redisinsight"
+      - "traefik.http.routers.indobase_redisinsight_https.tls=true"
     ports:
       - "8081:5540"
 
   graphql-explorer:
-    container_name: appwrite-graphql-explorer
+    container_name: indobase-graphql-explorer
     image: appwrite/altair:0.3.0
     restart: unless-stopped
     networks:
-      - appwrite
+      - indobase
     ports:
       - "9509:3000"
     environment:
@@ -1226,8 +1226,8 @@ services:
 networks:
   gateway:
     name: gateway
-  appwrite:
-    name: appwrite
+  indobase:
+    name: indobase
     ipam:
       config:
         - subnet: 172.16.238.0/24
@@ -1290,13 +1290,13 @@ configs:
         include './adminer.php';
 
 volumes:
-  appwrite-mariadb:
-  appwrite-redis:
-  appwrite-cache:
-  appwrite-uploads:
-  appwrite-imports:
-  appwrite-certificates:
-  appwrite-functions:
-  appwrite-sites:
-  appwrite-builds:
-  appwrite-config:
+  indobase-mariadb:
+  indobase-redis:
+  indobase-cache:
+  indobase-uploads:
+  indobase-imports:
+  indobase-certificates:
+  indobase-functions:
+  indobase-sites:
+  indobase-builds:
+  indobase-config:
