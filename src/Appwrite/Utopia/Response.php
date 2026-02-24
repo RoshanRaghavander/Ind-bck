@@ -848,6 +848,35 @@ class Response extends SwooleResponse
     }
 
     /**
+     * Send Cookie
+     *
+     * Override Swoole cookie handling to avoid PHP named-argument issues
+     * with the underlying Swoole\Http\Response::cookie signature.
+     *
+     * @param string $name
+     * @param string $value
+     * @param array  $options
+     * @return void
+     */
+    protected function sendCookie(string $name, string $value, array $options): void
+    {
+        // Map framework cookie options to Swoole's positional arguments.
+        $expires  = $options['expire']   ?? 0;
+        $path     = $options['path']     ?? '';
+        $domain   = $options['domain']   ?? '';
+        $secure   = $options['secure']   ?? false;
+        $httpOnly = $options['httponly'] ?? false;
+        $sameSite = $options['samesite'] ?? '';
+
+        /** @var SwooleHTTPResponse $swoole */
+        $swoole = $this->swoole;
+
+        // Use positional parameters to remain compatible with Swoole's
+        // internal parameter names and avoid "Unknown named parameter" errors.
+        $swoole->cookie($name, $value, $expires, $path, $domain, $secure, $httpOnly, $sameSite);
+    }
+
+    /**
      * YAML
      *
      * This helper is for sending YAML HTTP response.
