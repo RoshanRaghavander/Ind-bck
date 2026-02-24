@@ -305,7 +305,46 @@ $register->set('pools', function () {
                     case 'publisher':
                     case 'consumer':
                         return match ($dsn->getScheme()) {
-                            'redis' => new Queue\Broker\Redis(new Queue\Connection\Redis($dsn->getHost(), $dsn->getPort())),
+                            'redis' => new Queue\Broker\Redis((function () use ($dsn) {
+                                $host = $dsn->getHost();
+                                $port = $dsn->getPort();
+                                $user = $dsn->getUser();
+                                $pass = $dsn->getPassword();
+
+                                $rc = new \ReflectionClass(Queue\Connection\Redis::class);
+                                $ctor = $rc->getConstructor();
+                                if ($ctor === null) {
+                                    return $rc->newInstance();
+                                }
+
+                                $map = [
+                                    'host' => $host,
+                                    'hostname' => $host,
+                                    'port' => $port,
+                                    'user' => $user,
+                                    'username' => $user,
+                                    'pass' => $pass,
+                                    'password' => $pass,
+                                ];
+
+                                $args = [];
+                                foreach ($ctor->getParameters() as $param) {
+                                    $name = $param->getName();
+                                    if (\array_key_exists($name, $map)) {
+                                        $args[] = $map[$name];
+                                        continue;
+                                    }
+
+                                    if ($param->isDefaultValueAvailable()) {
+                                        $args[] = $param->getDefaultValue();
+                                        continue;
+                                    }
+
+                                    $args[] = null;
+                                }
+
+                                return $rc->newInstanceArgs($args);
+                            })()),
                             default => null
                         };
                     case 'cache':
