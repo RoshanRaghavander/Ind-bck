@@ -1,0 +1,69 @@
+version: '3.8'
+
+services:
+  mariadb:
+    image: mariadb:10.7
+    container_name: indobase-mariadb
+    restart: unless-stopped
+    networks:
+      - indobase
+    environment:
+      - MYSQL_ROOT_PASSWORD=Roshan@2505
+      - MYSQL_DATABASE=bckdb
+      - MYSQL_USER=indb
+      - MYSQL_PASSWORD=Roshan@2505
+    ports:
+      - "3306:3306"
+    volumes:
+      - mariadb-data:/var/lib/mysql
+
+  redis:
+    image: redis:7-alpine
+    container_name: indobase-redis
+    restart: unless-stopped
+    networks:
+      - indobase
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+
+  appwrite:
+    container_name: indobase-app
+    image: indobase-backend:prod
+    restart: unless-stopped
+    networks:
+      - indobase
+    ports:
+      - "8080:80"
+    depends_on:
+      - mariadb
+      - redis
+    environment:
+      - _APP_ENV=production
+      - _APP_WORKER_PER_CORE=6
+      - _APP_DOMAIN=localhost
+      - _APP_DOMAIN_TARGET=localhost
+      - _APP_CONSOLE_WHITELIST_ROOT=enabled
+      - _APP_SYSTEM_EMAIL_NAME=Appwrite
+      - _APP_SYSTEM_EMAIL_ADDRESS=team@appwrite.io
+      - _APP_SYSTEM_RESPONSE_FORMAT=json
+      - _APP_SYSTEM_SECURITY_EMAIL_ADDRESS=security@appwrite.io
+      - _APP_OPTIONS_ABUSE=enabled
+      - _APP_OPTIONS_FORCE_HTTPS=disabled
+      - _APP_OPENSSL_KEY_V1=9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08
+      - _APP_REDIS_HOST=redis
+      - _APP_REDIS_PORT=6379
+      - _APP_DB_HOST=mariadb
+      - _APP_DB_PORT=3306
+      - _APP_DB_SCHEMA=bckdb
+      - _APP_DB_USER=indb
+      - _APP_DB_PASS=Roshan@2505
+
+networks:
+  indobase:
+    driver: bridge
+
+volumes:
+  mariadb-data:
+  redis-data:

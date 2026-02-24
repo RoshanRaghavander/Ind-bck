@@ -1,4 +1,4 @@
-FROM composer:2.0 AS composer
+FROM composer:2 AS composer
 
 ARG TESTING=false
 ENV TESTING=$TESTING
@@ -12,7 +12,7 @@ RUN composer install --ignore-platform-reqs --optimize-autoloader \
     --no-plugins --no-scripts --prefer-dist \
     `if [ "$TESTING" != "true" ]; then echo "--no-dev"; fi`
 
-FROM appwrite/base:0.10.6 AS base
+FROM appwrite/base:1.0.0 AS base
 
 LABEL maintainer="team@indobase.fun"
 

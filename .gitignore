@@ -19,3 +19,7 @@ Makefile
 appwrite.config.json
 /.zed/
 .env
+.env.*
+storage/
+!.env.example
+!.env.prod.example

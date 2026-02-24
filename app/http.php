@@ -1,6 +1,7 @@
 <?php
 
 require_once __DIR__ . '/../vendor/autoload.php';
+error_reporting(E_ALL & ~E_DEPRECATED);
 
 use Appwrite\Network\Cors;
 use Appwrite\Utopia\Request;
@@ -210,8 +211,15 @@ function createDatabase(App $app, string $resourceKey, string $dbName, array $co
             continue;
         }
 
-        if (!$database->getCollection($key)->isEmpty()) {
-            continue;
+        // Check if collection already exists
+        try {
+            $existingCollection = $database->getCollection($key);
+            if (!$existingCollection->isEmpty()) {
+                Console::info("    └── Collection {$collection['$id']} already exists, skipping...");
+                continue; // Skip this collection entirely
+            }
+        } catch (\Exception $e) {
+            // Collection doesn't exist, continue with creation
         }
 
         Console::info("    └── Creating collection: {$collection['$id']}...");
@@ -236,7 +244,14 @@ function createDatabase(App $app, string $resourceKey, string $dbName, array $co
             'orders' => $index['orders'],
         ]), $collection['indexes']);
 
-        $database->createCollection($key, $attributes, $indexes);
+        try {
+            $database->createCollection($key, $attributes, $indexes);
+        } catch (DuplicateException $e) {
+        } catch (\PDOException $e) {
+            if (!str_contains($e->getMessage(), 'Duplicate column name')) {
+                throw $e;
+            }
+        }
     }
 
     if ($extraSetup) {
