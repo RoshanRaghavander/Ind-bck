@@ -1,7 +1,7 @@
 services:
   traefik:
     image: traefik:2.2
-    container_name: appwrite-traefik
+    container_name: indobase-traefik
     command:
       - --log.level=DEBUG
       - --api.insecure=true
@@ -18,16 +18,16 @@ services:
       - 8080:8080
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-      - appwrite-config:/storage/config:ro
-      - appwrite-certificates:/storage/certificates:ro
+      - indobase-config:/storage/config:ro
+      - indobase-certificates:/storage/certificates:ro
     depends_on:
-      - appwrite
+      - indobase
     networks:
       - gateway
-      - appwrite
+      - indobase
 
-  appwrite:
-    container_name: appwrite
+  indobase:
+    container_name: indobase
     build:
       context: .
       args:
@@ -37,18 +37,18 @@ services:
     ports:
       - "9501:80"
     networks:
-      - appwrite
+      - indobase
     labels:
-      - traefik.http.routers.appwrite.rule=PathPrefix(`/`)
-      - traefik.http.routers.appwrite-secure.rule=PathPrefix(`/`)
-      - traefik.http.routers.appwrite-secure.tls=true
+      - traefik.http.routers.indobase.rule=PathPrefix(`/`)
+      - traefik.http.routers.indobase-secure.rule=PathPrefix(`/`)
+      - traefik.http.routers.indobase-secure.tls=true
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-      - appwrite-uploads:/storage/uploads:rw
-      - appwrite-cache:/storage/cache:rw
-      - appwrite-config:/storage/config:rw
-      - appwrite-certificates:/storage/certificates:rw
-      - appwrite-functions:/storage/functions:rw
+      - indobase-uploads:/storage/uploads:rw
+      - indobase-cache:/storage/cache:rw
+      - indobase-config:/storage/config:rw
+      - indobase-certificates:/storage/certificates:rw
+      - indobase-functions:/storage/functions:rw
       - ./phpunit.xml:/usr/src/code/phpunit.xml
       - ./tests:/usr/src/code/tests
       - ./app:/usr/src/code/app
@@ -85,14 +85,14 @@ services:
       - _APP_COMPUTE_MEMORY
       - _APP_EXECUTOR_HOST
 
-  appwrite-worker-stats-usage:
+  indobase-worker-stats-usage:
     entrypoint: worker-stats-usage
-    container_name: appwrite-worker-stats-usage
+    container_name: indobase-worker-stats-usage
     build:
       context: .
     restart: unless-stopped
     networks:
-      - appwrite
+      - indobase
     depends_on:
       - redis
     environment:
@@ -100,14 +100,14 @@ services:
       - _APP_REDIS_HOST
       - _APP_REDIS_PORT
 
-  appwrite-worker-audits:
+  indobase-worker-audits:
     entrypoint: worker-audits
-    container_name: appwrite-worker-audits
+    container_name: indobase-worker-audits
     build:
       context: .
     restart: unless-stopped
     networks:
-      - appwrite
+      - indobase
     depends_on:
       - redis
       - mariadb
@@ -121,14 +121,14 @@ services:
       - _APP_DB_USER
       - _APP_DB_PASS
 
-  appwrite-worker-webhooks:
+  indobase-worker-webhooks:
     entrypoint: worker-webhooks
-    container_name: appwrite-worker-webhooks
+    container_name: indobase-worker-webhooks
     build:
       context: .
     restart: unless-stopped
     networks:
-      - appwrite
+      - indobase
     depends_on:
       - redis
       - mariadb
@@ -142,14 +142,14 @@ services:
       - _APP_DB_USER
       - _APP_DB_PASS
 
-  appwrite-worker-tasks:
+  indobase-worker-tasks:
     entrypoint: worker-tasks
-    container_name: appwrite-worker-tasks
+    container_name: indobase-worker-tasks
     build:
       context: .
     restart: unless-stopped
     networks:
-      - appwrite
+      - indobase
     depends_on:
       - redis
       - mariadb
@@ -163,20 +163,20 @@ services:
       - _APP_DB_USER
       - _APP_DB_PASS
 
-  appwrite-worker-deletes:
+  indobase-worker-deletes:
     entrypoint: worker-deletes
-    container_name: appwrite-worker-deletes
+    container_name: indobase-worker-deletes
     build:
       context: .
     restart: unless-stopped
     networks:
-      - appwrite
+      - indobase
     depends_on:
       - redis
       - mariadb
     volumes:
-      - appwrite-uploads:/storage/uploads:rw
-      - appwrite-cache:/storage/cache:rw
+      - indobase-uploads:/storage/uploads:rw
+      - indobase-cache:/storage/cache:rw
     environment:
       - _APP_ENV
       - _APP_REDIS_HOST
@@ -188,20 +188,20 @@ services:
       - _APP_DB_PASS
       - _APP_EXECUTOR_HOST
 
-  appwrite-worker-certificates:
+  indobase-worker-certificates:
     entrypoint: worker-certificates
-    container_name: appwrite-worker-certificates
+    container_name: indobase-worker-certificates
     build:
       context: .
     restart: unless-stopped
     networks:
-      - appwrite
+      - indobase
     depends_on:
       - redis
       - mariadb
     volumes:
-      - appwrite-config:/storage/config:rw
-      - appwrite-certificates:/storage/certificates:rw
+      - indobase-config:/storage/config:rw
+      - indobase-certificates:/storage/certificates:rw
     environment:
       - _APP_ENV
       - _APP_REDIS_HOST
@@ -212,21 +212,21 @@ services:
       - _APP_DB_USER
       - _APP_DB_PASS
 
-  appwrite-worker-functions:
+  indobase-worker-functions:
     entrypoint: worker-functions
-    container_name: appwrite-worker-functions
+    container_name: indobase-worker-functions
     build:
       context: .
     restart: unless-stopped
     networks:
-      - appwrite
+      - indobase
     depends_on:
       - redis
       - mariadb
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - /tmp:/tmp:rw
-      - appwrite-functions:/storage/functions:rw
+      - indobase-functions:/storage/functions:rw
     environment:
       - _APP_ENV
       - _APP_REDIS_HOST
@@ -242,18 +242,17 @@ services:
       - _APP_COMPUTE_MEMORY
       - _APP_EXECUTOR_HOST
 
-  appwrite-worker-mails:
+  indobase-worker-mails:
     entrypoint: worker-mails
-    container_name: appwrite-worker-mails
+    container_name: indobase-worker-mails
     build:
       context: .
     restart: unless-stopped
     networks:
-      - appwrite
+      - indobase
     depends_on:
       - redis
       - maildev
-      # - smtp
     environment:
       - _APP_ENV
       - _APP_REDIS_HOST
@@ -261,13 +260,13 @@ services:
       - _APP_SMTP_HOST
       - _APP_SMTP_PORT
 
-  appwrite-worker-builds:
+  indobase-worker-builds:
     entrypoint: worker-builds
-    container_name: appwrite-worker-builds
+    container_name: indobase-worker-builds
     build:
       context: .
     networks:
-      - appwrite
+      - indobase
     volumes:
       - ./app:/usr/src/code/app
       - ./src:/usr/src/code/src
@@ -289,14 +288,14 @@ services:
       - _APP_EXECUTOR_SECRET
       - _APP_EXECUTOR_HOST
 
-  appwrite-schedule:
+  indobase-schedule:
     entrypoint: schedule
-    container_name: appwrite-schedule
+    container_name: indobase-schedule
     build:
       context: .
     restart: unless-stopped
     networks:
-      - appwrite
+      - indobase
     depends_on:
       - redis
     environment:
@@ -305,18 +304,18 @@ services:
       - _APP_REDIS_PORT
 
   mariadb:
-    image: appwrite/mariadb:1.2.0 # fix issues when upgrading using: mysql_upgrade -u root -p
-    container_name: appwrite-mariadb
+    image: indobase/mariadb:1.2.0 # fix issues when upgrading using: mysql_upgrade -u root -p
+    container_name: indobase-mariadb
     restart: unless-stopped
     networks:
-      - appwrite
+      - indobase
     volumes:
-      - appwrite-mariadb:/var/lib/mysql:rw
+      - indobase-mariadb:/var/lib/mysql:rw
     ports:
       - "3306:3306"
     environment:
       - MYSQL_ROOT_PASSWORD=rootsecretpassword
-      - MYSQL_DATABASE=appwrite
+      - MYSQL_DATABASE=indobase
       - MYSQL_USER=user
       - MYSQL_PASSWORD=password
       - MARIADB_AUTO_UPGRADE=1
@@ -324,41 +323,41 @@ services:
 
   maildev:
     image: djfarrelly/maildev
-    container_name: appwrite-maildev
+    container_name: indobase-maildev
     restart: unless-stopped
     ports:
       - '1080:80'
     networks:
-      - appwrite
+      - indobase
 
   # smtp:
-  #   image: appwrite/smtp:1.0.1
-  #   container_name: appwrite-smtp
+  #   image: indobase/smtp:1.0.1
+  #   container_name: indobase-smtp
   #   restart: unless-stopped
   #   networks:
-  #     - appwrite
+  #     - indobase
   #   environment:
-  #     - MAILNAME=appwrite
+  #     - MAILNAME=indobase
   #     - RELAY_NETWORKS=:192.168.0.0/24:10.0.0.0/16
 
   redis:
     image: redis:5.0
-    container_name: appwrite-redis
+    container_name: indobase-redis
     restart: unless-stopped
     networks:
-      - appwrite
+      - indobase
     volumes:
-      - appwrite-redis:/data:rw
+      - indobase-redis:/data:rw
 
 networks:
   gateway:
-  appwrite:
+  indobase:
 
 volumes:
-  appwrite-mariadb:
-  appwrite-redis:
-  appwrite-cache:
-  appwrite-uploads:
-  appwrite-certificates:
-  appwrite-functions:
-  appwrite-config:
+  indobase-mariadb:
+  indobase-redis:
+  indobase-cache:
+  indobase-uploads:
+  indobase-certificates:
+  indobase-functions:
+  indobase-config:

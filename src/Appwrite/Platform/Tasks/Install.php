@@ -15,7 +15,7 @@ use Utopia\Validator\Text;
 
 class Install extends Action
 {
-    protected string $path = '/usr/src/code/appwrite';
+    protected string $path = '/usr/src/code/indobase';
 
     public static function getName(): string
     {
@@ -25,11 +25,11 @@ class Install extends Action
     public function __construct()
     {
         $this
-            ->desc('Install Appwrite')
+            ->desc('Install Indobase')
             ->param('http-port', '', new Text(4), 'Server HTTP port', true)
             ->param('https-port', '', new Text(4), 'Server HTTPS port', true)
-            ->param('organization', 'appwrite', new Text(0), 'Docker Registry organization', true)
-            ->param('image', 'appwrite', new Text(0), 'Main appwrite docker image', true)
+            ->param('organization', 'indobase', new Text(0), 'Docker Registry organization', true)
+            ->param('image', 'indobase', new Text(0), 'Main Indobase docker image', true)
             ->param('interactive', 'Y', new Text(1), 'Run an interactive session', true)
             ->param('no-start', false, new Boolean(true), 'Run an interactive session', true)
             ->callback($this->action(...));
@@ -49,7 +49,7 @@ class Install extends Action
             }
         }
 
-        Console::success('Starting Appwrite installation...');
+        Console::success('Starting Indobase installation...');
 
         // Create directory with write permissions
         if (!\file_exists(\dirname($this->path))) {
@@ -75,8 +75,7 @@ class Install extends Action
             Console::info('Compose file found, creating backup: docker-compose.yml.' . $time . '.backup');
             file_put_contents($this->path . '/docker-compose.yml.' . $time . '.backup', $data);
             $compose = new Compose($data);
-            $appwrite = $compose->getService('appwrite');
-            $oldVersion = $appwrite?->getImageVersion();
+            $oldVersion = $compose->getService('indobase')?->getImageVersion();
             try {
                 $ports = $compose->getService('traefik')->getPorts();
             } catch (\Throwable $th) {
@@ -232,12 +231,12 @@ class Install extends Action
         }
 
         if ($exit !== 0) {
-            $message = 'Failed to install Appwrite dockers';
+            $message = 'Failed to install Indobase dockers';
             Console::error($message);
             Console::error($stderr);
             Console::exit($exit);
         } else {
-            $message = 'Appwrite installed successfully';
+            $message = 'Indobase installed successfully';
             Console::success($message);
         }
     }
